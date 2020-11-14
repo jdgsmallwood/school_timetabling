@@ -2,7 +2,8 @@
 
 This is a timetabling system, which can allocate students into subject at particular
 times, with particular teachers, in particular rooms, while respecting teacher availabilities,
-and minimizes clashes for students. 
+and minimizes clashes for students. This can also break classes into multiple classes if there are more students than room capacity, 
+and maximises room usage to allow subjects that need projectors to get rooms with projectors.
 
 Thanks to Alex Cummaudo for help with this project as well.
 
