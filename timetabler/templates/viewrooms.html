@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+
+    {% include 'mymodal.html' %}
+    <div class="row">
+        <div class="col-md-12">
+
+            <h1>Rooms and Availability</h1>
+            {% if current_user.is_admin == '1' %}
+
+
+
+                <button type="button" class="button" data-toggle="modal" data-target="#addModal">Add Room</button>
+
+
+            {% endif %}
+            <table class="table" id="roomavailabilities">
+                <thead>
+                <td>Room Name</td>
+                {% for timeslot in timeslots %}
+                    <td>{{ timeslot.day }} {{ timeslot.time }}</td>
+                {% endfor %}
+
+                <td>Has Projector?</td>
+
+                </thead>
+                {% for room in rooms %}
+                    <tr>
+                        <td>{{ room.name }}</td>
+                        {% for timeslot in timeslots %}
+                            {% if  timeslot in room.get_available_times() %}
+                                <td class="attended"></td>
+                            {% else %}
+                                <td class="notattended"></td>
+                            {% endif %}
+                        {% endfor %}
+
+                    <td>
+                        <select id="hasprojector" onchange="updateroomprojector({{ room.id }}, this.value)">
+                            {% if room.projector == True %}
+                            <option value = '-1'></option>
+                                <option value = '1' selected>Yes</option>
+                                <option value = '0'>No</option>
+
+
+                            {% elif room.projector == False %}
+                                <option value = '1'>Yes</option>
+                                <option value = '0' selected>No</option>
+
+                            {% else %}
+                                <option value = '-1' selected></option>
+                                <option value = '1'>Yes</option>
+                                <option value = '0'>No</option>
+                            {% endif %}
+
+
+
+                        </select>
+
+
+                    </td>
+
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+
+
+
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+    <script>
+    function updateroomprojector(roomid, value) {
+        $.ajax({
+            url: "/updateroomprojector",
+                data: {roomid: roomid, value: value},
+                type: "POST",
+                dataType: "json"
+        })
+    }
+
+
+    </script>
+
+{% endblock %}

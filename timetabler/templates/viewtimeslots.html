@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Timeslots</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="timeslots">
+                <thead>
+                <td>Day</td>
+                <td>Time</td>
+                <td>Preferred Time?</td>
+                <td></td>
+                </thead>
+
+
+            </table>
+        </div>
+    </div>
+
+{% if current_user.is_admin == '1' %}
+    <button type="button" class="button" data-toggle="modal" data-target="#addModal">Add Timeslot</button>
+{% endif %}
+
+    {% include 'mymodal.html' %}
+
+
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+    <script>
+
+        $(document).ready(function () {
+            $('#timeslots').DataTable({
+                "ajax": {
+                    "url": '/viewtimeslotsajax',
+                    "type": 'GET'
+                },
+                "columns": [{"data": "day"}, {"data": "time"}, {
+                    "data": "preferredtime", "render": function (data, type, row, meta) {
+                        if (row.preferredtime == true) {
+
+                            return "<select onchange='changepreferredtime("+row.id+",this.value)'><option value='1' selected>Yes</option><option value='0'>No</option></select>"
+                        } else {
+                            return "<select onchange='changepreferredtime("+row.id+",this.value)'><option value='1'>Yes</option><option value='0' selected>No</option></select>"
+
+                        }
+                    }
+                }, {
+                    "render": function (data, type, row, meta) {
+                        {% if current_user.is_admin == '1' %}
+                            return "<a href='/removetimeslot%3Ftimeslotid%3D" + row.id + "'><img src='../static/img/removeSymbol.png' class='deleteIcon' /></a>";
+                        {% else %}
+                        return "";
+                        {% endif %}
+                    }
+                }
+                ]
+            });
+        });
+
+
+
+        function changepreferredtime(timeslotid,value) {
+            $.ajax({
+                url: "/changepreferredtime",
+                data: {timeslotid: timeslotid, value: value},
+                type: "POST",
+                dataType: "json"
+            })
+        }
+
+    </script>
+{% endblock %}

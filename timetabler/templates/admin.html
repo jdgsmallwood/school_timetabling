@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Update Year and Study Period</h2>
+    <form action="updateadminsettings" method="POST">
+        Current Year: <input type="number" name="year" value={{ admin['currentyear'] }}>
+        Study Period: <select name="studyperiod" id="studyperiod">
+        {% if admin['studyperiod'] == "Semester 1" %}
+            <option value="Semester 1" selected>Semester 1</option>
+            <option value="Semester 2">Semester 2</option>
+        {% else %}
+            <option value="Semester 1">Semester 1</option>
+            <option value="Semester 2" selected>Semester 2</option>
+        {% endif %}
+
+    </select>
+        <input type='submit' class="button" value='Submit'/></form>
+    </form>
+    <br>
+    <h2>Timetable Management</h2>
+    <form action="updatetimetable" method="POST">
+        Timetable:
+        <select name="timetable" id="timetable">
+            {% for timetable in timetables %}
+                {% if timetable == admin["timetable"] %}
+                    <option value="{{ timetable.id }}" selected>{{ timetable.key }}</option>
+                {% else %}
+                    <option value="{{ timetable.id }}">{{ timetable.key }}</option>
+                {% endif %}
+            {% endfor %}
+        <input type='submit' class="button" value='Submit'/></form>
+    </select>
+    </form>
+    <h2>Delete From Database</h2>
+    <button class="button" onclick="deleteallstudents()">Delete All Students</button>
+    <button class="button" onclick="deleteallsubjects()">Delete All Subjects</button>
+    <button class="button" onclick="deletealltutors()">Delete All Tutors</button>
+
+
+
+    <script>
+        function deleteallstudents() {
+            $.ajax({
+                type: 'POST',
+                url: '/deleteallstudentsajax',
+                dataType: 'json',
+            });
+        }
+
+        function deleteallsubjects() {
+            $.ajax({
+                type: 'POST',
+                url: '/deleteallsubjectsajax',
+                dataType: 'json',
+            });
+        }
+
+        function deletealltutors() {
+            $.ajax({
+                type: 'POST',
+                url: '/deletealltutorsajax',
+                dataType: 'json',
+            });
+        }
+
+
+    </script>
+
+
+{% endblock %}

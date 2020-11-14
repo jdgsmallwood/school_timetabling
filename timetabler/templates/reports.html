@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Clashes</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="clashes">
+                <thead>
+                <td>Student ID</td>
+                <td>Name</td>
+                <td>Timeslot</td>
+                </thead>
+
+
+            </table>
+        </div>
+    </div>
+
+
+
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+    <script>
+
+        $(document).ready(function () {
+            $('#clashes').DataTable({
+                "ajax": {
+                    "url": '/viewclashesajax',
+                    "type": 'GET'
+                },
+                "columns": [{
+                    "data": "studentcode", "render": function (data, type, row, meta) {
+                        return row.student.studentcode
+                    }
+                }, {
+                    "data": "name", "render": function (data, type, row, meta) {
+                        return "<a href='/viewstudent%3Fstudentcode%3D" + row.student.studentcode + "'>" + row.student.name + "</a>";
+                    }
+                }, {
+                    "data": "timeslot", "render": function (data, type, row, meta) {
+                        return row.timeslot.day + " " + row.timeslot.time;
+                    }
+                }]
+            });
+    </script>
+{% endblock %}

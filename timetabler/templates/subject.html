@@ -1,0 +1,340 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ subject.subname }}</h1>
+
+            {{ msg }}
+            <table class="table">
+                <thead>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Study Period</td>
+                <td>Tutor</td>
+                <td>Repeats</td>
+                <td>Needs Projector</td>
+
+                </thead>
+                <tr>
+                    <td>{{ subject["subcode"] }}</td>
+                    <td>{{ subject["subname"] }}</td>
+                    <td> {{ subject["studyperiod"] }}</td>
+                    <td><a href="{{ url_for('view_tutor', tutorid = tutor["id"]) }}">{{ tutor["name"] }}</a></td>
+                    <td>{% if current_user.is_admin == '1' %}<select id="repeats" onchange="changedvalue()">
+                        {% for i in range(1,5) %}
+                            {% if i == subject["repeats"] %}
+                                <option selected>{{ i }}</option>
+                            {% else %}
+                                <option>{{ i }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>{% else %}{{ subject["repeats"] }}{% endif %}</td>
+                    <td><select id="needsprojector" onchange="needsprojectorchange({{ subject.id }},this.value)">{% if subject["needsprojector"] == True %}
+                        <option value="-1"></option>
+                        <option value="1" selected>Yes</option>
+                        <option value="0">No</option>
+                        {% elif subject["needsprojector"] == False %}
+                        <option value="-1"></option>
+                        <option value="1">Yes</option>
+                        <option value="0" selected>No</option>
+                        {% else %}
+                        <option value="-1" selected></option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                        {% endif %}
+                    </select></td>
+
+                </tr>
+            </table>
+            {% if current_user.is_admin == '1' %}
+                <button class="button" data-toggle="modal" data-target="#editModal">Edit {{ subject["subname"] }}</button>
+                <a href="{{ url_for('remove_subject', subcode = subject["subcode"]) }}" class='delete' data-confirm='Are you sure you want to delete this item?'>
+                    <button class="button-delete">Delete {{ subject["subname"] }}</button>
+            </a>{% endif %}
+            {% if tutor != None %}
+                       {% if current_user.is_admin == '1' %}
+                           <a href="{{ url_for('remove_subject_from_tutor', subcode = subject["subcode"], tutorid = tutor["id"]) }}"
+                              class="delete" data-confirm="Are you sure you want to delete this item?">
+                            <button type="button" class="button-delete">Remove Tutor From Subject</button>
+                        </a>{% endif %}{% endif %}
+            <div id="popup" style="display: none">
+                <h1>Attendance Rate</h1>
+                <canvas id="SubjectAttendanceRate" height="125"></canvas>
+
+
+            </div>
+
+        </div>
+    </div>
+    {% if current_user.is_admin == '1' %}
+    <div class="row">
+        <div class="col-md-12">
+            {% if tutor == None %}
+                <h3>Add Tutor to Subject</h3>
+                <form action="{{ url_for('add_tutor_to_subject', subcode = subject["subcode"]) }}" method="POST">
+                    <select name="tutor">
+                        {% for temptutor in tutors %}
+
+                            <option value={{ temptutor["id"] }}>{{ temptutor["name"] }}</option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <input type="submit" class="button" value="Add Tutor to Subject"/>
+                </form>
+                {{ msg2 }}
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+
+
+
+
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Students Enrolled in this subject</h1>
+
+            <table class="table" id="rolltable">
+                <thead>
+                <td>Student Number</td>
+                <td>Name</td>
+                <td>Scheduled Class</td>
+                <td/>
+                </thead>
+
+                {% for student in students %}
+                    <tr>
+
+                        <td id="studentid/{{ student.id }}">
+                            <a href="{{ url_for('view_student', studentcode = student.studentcode) }}">{{ student["studentcode"] }}</a>
+                        </td>
+                        <td id="studentid/{{ student.id }}">
+                            <a href="{{ url_for('view_student', studentcode = student.studentcode) }}">{{ student["name"] }}</a>
+                        </td>
+                        <td>{% for timeclass in subject.timetabledclasses %}
+                            {% if student in timeclass.students %}
+{{ timeclass.timeslot.day }} {{timeclass.timeslot.time }}
+                            {% endif %}
+                            {% endfor %}
+                            </td>
+                        <td>
+                            {% if current_user.is_admin == '1' %}
+                                <a href="{{ url_for('remove_subject_from_student', studentcode = student.studentcode, subcode = subject["subcode"]) }}"
+                                   class="delete" data-confirm="Are you sure you want to delete this item?"><img
+                                        src='../static/img/removeSymbol.png' class='deleteIcon'/></a>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+    </div>
+
+
+    {% if tutor != None %}
+
+        <div class="row">
+            <div class="col-md-12">
+
+
+                {% if subject.timetabledclasses == [] %}
+                    <h1>Timetable Explorer</h1>
+                    <h2>Student Availability</h2>
+                <table class="table">
+                    <thead>
+                    {% for timeslot in timeslots %}
+                        <td>{{ timeslot.day }} {{ timeslot.time }}</td>
+                    {% endfor %}
+                    </thead>
+                    <tr>
+                        {% for timeslot in timeslots %}
+                            {% if timeslot in times %}
+                                <td class="attended"></td>
+                            {% else %}
+                                <td class="notattended"></td>
+                            {% endif %}
+                        {% endfor %}
+
+                    </tr>
+
+
+                </table>
+            </div>
+        </div>
+            <h2>Tutor Availability</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table">
+                        <thead>
+                        {% for row in timeslots %}
+                            <td>{{ row.day }} {{ row.time }}</td>
+                        {% endfor %}
+                        </thead>
+                        <tr>
+                            {% for timeslot in timeslots %}
+                                {% if timeslot in tutor.get_teaching_times() %}
+                                    <td class="occupied"></td>
+                                {% elif  timeslot in tutor.availabletimes %}
+                                    <td class="attended"></td>
+                                {% else %}
+                                    <td class="notattended"></td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+
+
+                    </table>
+                {% if current_user.is_admin == '1' %}
+                    <form action="{{ url_for('add_timetabledclass_to_subject', subcode = subject.subcode) }}"
+                          method="POST">
+                        <select name="timeslot">
+                            {% for timeslot in timeslots %}
+
+                                <option value={{ timeslot.id }}>{{ timeslot.day }} {{ timeslot.time }}</option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <input type="submit" class="button" value="Timetable Class"/>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+
+                    <div class="row">
+                    <div class="col-md-12">
+                        <h1>Manage Timetabled Classes</h1>
+
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <td>Day</td>
+                            <td>Time</td>
+                            <td>Room</td>
+                            <td></td>
+                        </tr>
+                        </thead>
+                        {% for timeclass in timetabledclasses %}
+                            <tr>
+                                <td>{{ timeclass.timeslot.day }}</td>
+                                <td>{{ timeclass.timeslot.time }}</td>
+                                <td>{% if current_user.is_admin == '1' %}<select id="classroom/{{ timeclass.id }}"
+                                                                                 onchange="updateClassRoom({{ timeclass.id }})">
+                                    <option value="-1"></option>
+                                    {% for room in rooms %}
+                                        {% if room.id == timeclass.room.id %}
+                                            <option value="{{ room.id }}" selected>{{ room.name }}</option>
+                                        {% elif timeclass.timeslot in room.get_available_times() %}
+                                            <option value="{{ room.id }}">{{ room.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select> {% else %} {{ timeclass.room.name }}{% endif %}</td>
+                                <td><a href="/downloadroll%3Fclassid%3D{{ timeclass.id }}">
+                                    <button class="button">Download Roll</button>
+                                </a></td>
+                            </tr>
+                        {% endfor %}
+
+                    </table>
+<table class="table">
+<thead>
+<td>Student</td>
+{% for timeclass in timetabledclasses %}
+    <td>{{ timeclass.timeslot.day }} {{ timeclass.timeslot.time }}<a
+            href="{{ url_for('remove_timetabled_class',timetabledclassid = timeclass.id) }}" class="delete"
+            data-confirm="Are you sure you want to delete this item?"><img src='../static/img/removeSymbol.png'
+                                                                           class='deleteIcon'/></a></td>
+{% endfor %}
+</thead>
+    {% for student in subject.students %}
+<tr>
+<td>{{ student.name }}</td>
+    {% for timeclass in subject.timetabledclasses %}
+
+{% if  student in timeclass.students %}
+
+                            <td class="attended {{ student.id }}" id="slot/{{ timeclass.id }}/{{ student.id }}"
+                                onclick="updateStudentScheduledClass({{ timeclass.id }},{{ student.id }},'slot/{{ timeclass.id }}/{{ student.id }}')"></td>
+                    {% else %}
+                            <td class="notattended {{ student.id }}" id="slot/{{ timeclass.id }}/{{ student.id }}"
+                                onclick="updateStudentScheduledClass({{ timeclass.id }},{{ student.id }},'slot/{{ timeclass.id }}/{{ student.id }}')"></td>
+                    {% endif %}
+{% endfor %}
+</tr>
+{% endfor %}
+</table>
+                    {% if current_user.is_admin == '1' %}
+         <form action="{{ url_for('add_timetabledclass_to_subject', subcode = subject.subcode) }}"
+                          method="POST">
+                        <select name="timeslot">
+                            {% for timeslot in timeslots %}
+
+                                <option value={{ timeslot.id }}>{{ timeslot.day }} {{ timeslot.time }}</option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <input type="submit" class="button" value="Timetable Class"/>
+                    </form>
+{% endif %}
+                    </div>
+                    </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {% endif %}
+    {% include "mymodal.html" %}
+
+<script>
+      function needsprojectorchange(subjectid,selectedvalue) {
+            $.ajax({
+                type: 'POST',
+                data: {subjectid: subjectid, value: selectedvalue},
+                url: '/needsprojectorchange',
+                dataType: 'json'
+            });
+        }
+
+
+
+    function updateClassRoom(timeclassid) {
+            var x = document.getElementById('classroom/' + timeclassid.toString());
+            var y = x.options[x.selectedIndex].value;
+            $.ajax({
+                url: "/updateclassroomajax",
+                data: {timeclassid: timeclassid, roomid: y},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+
+                },
+                error: function () {
+
+                }
+            });
+        }
+</script>
+
+
+{% endblock %}

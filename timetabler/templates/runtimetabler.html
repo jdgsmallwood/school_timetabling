@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <button onclick="runtimetable()" class="button">Run Timetable</button>
+<div class="row">
+    <div class="col-md-12">
+            <h1>Current Subject Mappings</h1>
+            <table class="table" id="currentmappedsubjects">
+                <thead>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Tutor Name</td>
+                <td>Number of Students</td>
+                <td>Repeats</td>
+                <td></td>
+                </thead>
+            </table>
+        </div>
+</div>
+    <div class="row">
+        <div class="col-md-12">
+        <h1>Eligible Subject Mappings</h1>
+        <table class="table" id="eligiblesubjects">
+            <thead>
+            <td>Subject Code</td>
+            <td>Subject Name</td>
+            <td>No. Students</td>
+            <td></td>
+            </thead>
+        </table>
+    </div>
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Current Tutor Availabilities</h1>
+            <table class="table" id="tutoravailabilities">
+                <thead>
+                <td>Tutor Name</td>
+                {% for timeslot in timeslots %}
+                    <td>{{ timeslot.day }} {{ timeslot.time }}</td>
+                {% endfor %}
+                </thead>
+                {% for tutor in tutors %}
+                    <tr>
+                        <td><a href="{{ url_for('view_tutor',tutorid = tutor.id) }}">{{ tutor.name }}</a></td>
+                        {% for timeslot in timeslots %}
+                            {% if  timeslot in tutor.availabletimes %}
+                                <td class="attended" id="slot/{{ timeslot.id }}/{{ tutor.id }}"
+                                    onclick="updateAvailability({{ timeslot.id }},{{ tutor.id }},'slot/{{ timeslot.id }}/{{ tutor.id }}')"></td>
+                            {% else %}
+                                <td class="notattended" id="slot/{{ timeslot.id }}/{{ tutor.id }}"
+                                    onclick="updateAvailability({{ timeslot.id }},{{ tutor.id }},'slot/{{ timeslot.id }}/{{ tutor.id }}')"></td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <button onclick="runtimetable()" class="button">Run Timetable</button>
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+<script>
+
+        $(document).ready(function () {
+            $('#currentmappedsubjects').DataTable({
+                "ajax": {
+                    "url": '/viewcurrentmappedsubjectsajax',
+                    "type": 'GET'
+                },
+                "columns": [{"data": "subcode"}, {
+                    "data": "subname", "render": function (data, type, row, meta) {
+                        return "<a href='/subject%3Fsubcode%3D" + row.subcode + "'>" + row.subname + "</a>";
+                    }
+                }, {
+                    "data": "name", "render": function (data, type, row, meta) {
+                        return "<a href='/viewtutor%3Ftutorid%3D" + row.tutor.id + "'>" + row.tutor.name + "</a>";
+                    }
+                }, {"data": "students"}, {
+                    "data": "repeats", "render": function (data, type, row, meta) {
+                        return '<input type="number" style="width:35px" id="repeats/' + row.id + '" onchange="repeatsChangedValue(' + row.id + ')" value = ' + row.repeats + ' />';
+                    }
+                }, {
+                    "data": "remove", "render": function (data, type, row, meta) {
+                        return "<a href='/removesubjectfromtutor%3Ftutorid%3D" + row.tutor.id + "&subcode%3D" + row.subcode + "' class='delete' data-confirm='Are you sure you want to delete this item?'><img src='../static/img/removeSymbol.png' class='deleteIcon' class='delete' data-confirm='Are you sure you want to delete this item?'/></a>";
+                    }
+                }]
+            });
+            $('#eligiblesubjects').DataTable({
+                "ajax": {
+                    "url": '/vieweligiblesubjectsajax',
+                    "type": 'GET'
+                },
+                "columns": [{"data": "subcode"}, {
+                    "data": "subname", "render": function (data, type, row, meta) {
+                        return "<a href='/subject%3Fsubcode%3D" + row.subcode + "'>" + row.subname + "</a>";
+                    }
+                }, {
+                    "data": "name", "render": function (data, type, row, meta) {
+                        return row.students;
+                    }
+                },
+                    {
+                        "data": "addtutor", "render": function (data, type, row, meta) {
+
+                        return "<form action='/addtutortosubject%3Fsubcode%3D" + row.subcode + "' method='POST'> <select name='tutor'><option value=''>--Please Select a Tutor--</option>{% for temptutor in tutors %} <option value={{ temptutor['id'] }}>{{ temptutor['name'] }} </option>{% endfor %} </select> <input type='submit' class='button' value='Add Tutor to Subject'/> </form>";
+
+
+                    }
+                    }]
+            });
+        });
+
+
+        function updateAvailability(timeslotid, tutorid, id) {
+            $.ajax({
+                url: "/updatetutoravailabilityajax",
+                data: {timeslotid: timeslotid, tutorid: tutorid},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var x = document.getElementById(id);
+                    if (x.className == "attended") {
+                        x.className = "notattended";
+                    } else if (x.className == "notattended") {
+                        x.className = "attended";
+                    }
+                },
+                error: function () {
+
+                }
+            });
+        }
+
+        function runtimetable() {
+            alert('The Timetabler will run in the background and will take approximately 5 minutes. If it does not populate after this time, check that there are sufficient tutor availabilities for the number of tutorials assigned.')
+
+            $.ajax({
+                url: "/runtimetableprogram",
+                data: {},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+
+                },
+                error: function () {
+
+                }
+            });
+        }
+
+        function repeatsChangedValue(subjectid) {
+            var x = document.getElementById("repeats/" + subjectid);
+            var y = x.value;
+            $.ajax({
+                url: "/updatesubjectrepeats",
+                data: {subject: subjectid, repeats: y},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+
+                }
+                ,
+                error: function () {
+
+                }
+            });
+
+        }
+
+
+</script>
+
+
+
+
+{% endblock %}

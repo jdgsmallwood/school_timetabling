@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>View Tutor Hours</h1>
+    <form method="post" action="downloadtutorhours">
+        From Week: <input type="datetime-local" id="minweek" name="minweek" value='2017-01-01T00:00'>
+        To Week: <input type="datetime-local" id="maxweek" name="maxweek" value='2017-12-31T00:00'>
+        <button class="button" type="button" onclick="filterDataTable()">Filter</button>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="tutorhours">
+                <thead>
+                <td>Tutor</td>
+                <td>Number of Initials</td>
+                <td>Number of Repeats</td>
+                </thead>
+
+            </table>
+            <button class="button" action="submit">Download as Excel</button>
+            <table class="table" id="tutorhoursextended">
+                <thead>
+                <td>Tutor</td>
+                <td>Subject Name</td>
+                <td>Date</td>
+                <td>Hours</td>
+                </thead>
+
+            </table>
+        </div>
+    </div>
+    </form>
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+    <script>
+
+        $(document).ready(function () {
+            datatable = $('#tutorhours').DataTable({
+                "ajax": {
+                    "url": '/gettutorhours',
+                    "data": {
+                        minweek: function (d) {
+                            return document.getElementById('minweek').value
+                        }, maxweek: function (d) {
+                            return document.getElementById('maxweek').value
+                        }
+                    },
+                    "type": 'POST'
+                },
+                "columns": [{
+                    "data": "studentcode", "render": function (data, type, row, meta) {
+                        return row.tutor.name;
+                    }
+                }, {"data": "initials"}, {"data": "repeats"}
+                ]
+            });
+
+            datatable2 = $('#tutorhoursextended').DataTable({
+                "ajax": {
+                    "url": '/gettutorhoursextended',
+                    "data": {
+                        minweek: function (d) {
+                            return document.getElementById('minweek').value
+                        }, maxweek: function (d) {
+                            return document.getElementById('maxweek').value
+                        }
+                    },
+                    "type": 'POST'
+                },
+                "columns": [{
+                    "data": "studentcode", "render": function (data, type, row, meta) {
+                        return row.tutor.name;
+                    }
+                }, {"data": "subname"}, {"data": "dateandtime"}, {"data": "hours"}
+                ]
+            });
+        });
+        function filterDataTable() {
+
+
+            datatable.ajax.reload()
+            datatable2.ajax.reload()
+        }
+
+
+    </script>
+{% endblock %}

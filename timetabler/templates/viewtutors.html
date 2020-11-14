@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Tutors</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="tutors">
+                <thead>
+                <td>Name</td>
+                <td>Assigned Classes</td>
+                <td>Available Times</td>
+                </thead>
+            </table>
+        </div>
+    </div>
+    {% if current_user.is_admin == '1' %}
+    <div class="row">
+        <div class="col-md-12">
+
+            <button type="button" class="button" data-toggle="modal" data-target="#addModal">Add Tutor</button>
+
+        </div>
+    </div>{% endif %}
+
+
+    {% include 'mymodal.html' %}
+
+
+
+
+
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+    <script>
+
+        $(document).ready(function () {
+            $('#tutors').DataTable({
+                "ajax": {
+                    "url": '/viewtutorsajax',
+                    "type": 'GET'
+                },
+                "columns": [{
+                    "data": "name", "render": function (data, type, row, meta) {
+                        return "<a href='/viewtutor%3Ftutorid%3D" + row.id + "'>" + row.name + "</a>";
+                    }
+                }, {
+                    "data": "assignedtutes", "render": function (data, type, row, meta) {
+                        var sum = 0;
+                        for (var j = 0; j < row['subjects'].length; j++) {
+                            sub = row['subjects'][j]
+                            sum = sum + sub['repeats']
+                        }
+                        return sum;
+                    }
+                }, {
+                    "data": "availabletimes", "render": function (data, type, row, meta) {
+                        var sum = row['availabletimes'].length
+                        return sum;
+                    }
+                }],
+                "createdRow": function (row, data, index) {
+                    var sum = 0;
+                    for (var j = 0; j < data['subjects'].length; j++) {
+                        sub = data['subjects'][j]
+                        sum = sum + sub['repeats']
+                    }
+                    console.log(data)
+                    if (data['availabletimes'].length < sum) {
+                        $('td', row).eq(1).addClass('notattended');
+                        $('td', row).eq(2).addClass('notattended');
+                    }
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <h1>Subjects</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-2">
+            <button type="button" class="button" data-toggle="modal" data-target="#addModal">Add Subject</button>
+            <a href="/downloadrolls">
+                <button type='button' class="button">Download All Rolls</button>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" , id="subjects">
+                <thead>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Number of Students</td>
+                </thead>
+
+                <tfoot>
+                <tr>
+                    <td>Subject Code</td>
+                    <td>Subject Name</td>
+                    <td>Number of Students</td>
+                </tr>
+
+
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="row" style="display: none">
+
+
+    </div>
+
+    {% include 'mymodal.html' %}
+
+
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+
+
+    <script>
+
+        $(document).ready(function () {
+            $('#subjects').DataTable({
+                "ajax": {
+                    "url": '/viewsubjectsajax',
+                    "type": 'GET'
+                },
+                "pageLength": 100,
+                "columns": [{
+                    "data": "subcode", "render": function (data, type, row, meta) {
+                        return "<a href='/subject%3Fsubcode%3D" + row.subcode + "'>" + data + "</a>";
+                    }
+                }, {
+                    "data": "subname", "render": function (data, type, row, meta) {
+                        return "<a href='/subject%3Fsubcode%3D" + row.subcode + "'>" + data + "</a>";
+                    }
+                }, {"data": "students"}]
+            });
+        });
+    </script>
+
+
+
+{% endblock %}

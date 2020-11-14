@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Student Information</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                <td>Student ID</td>
+                <td>Name</td>
+                <td>University</td>
+                <td>College</td>
+                <td></td>
+                <td></td>
+                </thead>
+                <tr>
+                    <td>{{ student.studentcode }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{% if student.university != None %}{{ student.university.name }}{% endif %}</td>
+                    <td>{% if student.college != None %}{{ student.college.name }}{% endif %}</td>
+                    <td>
+                        <button class="button" data-toggle="modal" data-target="#editModal">Edit Student Details
+                        </button>
+                    </td>
+                    <td><a href='{{ url_for('delete_student', studentid = student.id) }}' class='delete'
+                           data-confirm='Are you sure you want to delete this item?'><img
+                            src='../static/img/removeSymbol.png' class='deleteIcon' class='delete'
+                            data-confirm='Are you sure you want to delete this item?'/></a></td>
+                </tr>
+            </table>
+            <h1>Subjects this student takes:</h1>
+            <table class="table">
+                <thead>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Study Period</td>
+                <td></td>
+
+                </thead>
+
+                {% for subject in subjects %}
+                    <tr>
+
+                        <td>{{ subject["subcode"] }}</td>
+                        <td>
+                            <a href="{{ url_for('view_subject', subcode = subject.subcode) }}">{{ subject["subname"] }}</a>
+                        </td>
+                        <td> {{ subject["studyperiod"] }}</td>
+                        <td>
+                            {% if current_user.is_admin == '1' %}<a href="{{ url_for('remove_subject_from_student', subcode = subject.subcode, studentcode = student.studentcode) }}"><img
+                                    src='../static/img/removeSymbol.png' class='deleteIcon'/></a>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% if current_user.is_admin == '1' %}
+            <form action="{{ url_for('add_subject_to_student', studentcode = student.studentcode) }}" method="POST">
+                <select name="subject">
+                    {% for subject in eligiblesubjects %}
+
+                        <option value={{ subject["subcode"] }}>{{ subject["subname"] }}</option>
+
+                    {% endfor %}
+
+                </select>
+                <input type="submit" class="button" value="Add Subject to Student"/>
+            </form>
+        {% endif %}
+        </div>
+
+    </div>
+
+
+
+
+
+
+    {{ msg }}
+    {% if student.timetabledclasses|length !=0 %}
+    <h1>Student Timetable</h1>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Timeslot</td>
+                <td></td>
+                </thead>
+
+                {% for timetabledclass in student.timetabledclasses %}
+                    <tr>
+
+                        <td>{{ timetabledclass.subject.subcode }}</td>
+                        <td>
+                            <a href="{{ url_for('view_subject', subcode = timetabledclass.subject.subcode) }}">{{ timetabledclass.subject.subname }}</a>
+                        </td>
+                        <td> {{ timetabledclass.timeslot.day + " " + timetabledclass.timeslot.time }}</td>
+                        <td>
+                           {% if current_user.is_admin == '1' %} <a href="{{ url_for('remove_timetabled_class', timetabledclassid = timetabledclass.id) }}"><img
+                                   src='../static/img/removeSymbol.png' class='deleteIcon'/></a>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    {% include "mymodal.html" %}
+{% endblock %}

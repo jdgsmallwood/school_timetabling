@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+{% block content2 %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <h1>Tutor Information</h1>
+            {{ msg }}
+            <table class="table">
+                <thead>
+                <td>Name</td>
+                <td></td>
+                </thead>
+                <tr>
+                    <td>{{ tutor["name"] }}</td>
+                    {% if current_user.is_admin == '1' %}
+                        <td><button class="button" data-toggle="modal" data-target="#editModal">Edit Tutor</button><a href="{{ url_for('remove_tutor', tutorid = tutor["id"]) }}" class="delete" data-confirm="Are you sure you want to delete this item?">
+                <button class="button-delete">Remove Tutor</button>
+            </a></td>
+            {% endif %}
+                </tr>
+            </table>
+
+        </div>
+        <div class="col-md-6">
+            <h1>{{ tutor.name }} teaches:</h1>
+            {{ msg2 }}
+            <table class="table">
+                <thead>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Study Period</td>
+                <td></td>
+                </thead>
+
+                {% for subject in subjects %}
+                    <tr>
+
+                        <td>
+                            <a href="{{ url_for('view_subject', subcode = subject.subcode) }}">{{ subject["subcode"] }}</a>
+                        </td>
+                        <td>{{ subject["subname"] }}</td>
+                        <td> {{ subject["studyperiod"] }}</td>
+                        <td>
+                            <a href="{{ url_for('remove_subject_from_tutor', subcode = subject.subcode, tutorid = tutor['id']) }}" class="delete" data-confirm="Are you sure you want to delete this item?">
+<img src='../static/img/removeSymbol.png' class='deleteIcon' />
+                            </a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% if current_user.is_admin == '1' %}
+            <h3>Add Subject to Tutor</h3>
+            <form action="{{ url_for('add_subject_to_tutor', tutorid = tutor["id"]) }}" method="POST">
+                <select name="subject">
+                    {% for subject in eligiblesubjects %}
+
+                        <option value={{ subject["subcode"] }}>{{ subject["subname"] }}</option>
+
+                    {% endfor %}
+
+                </select>
+
+                <input type="submit" class="button" value="Add Subject to Tutor"/>
+            </form>
+            {{ msg2 }}
+        {% endif %}
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="row">
+        <h1>Tutor Availability</h1>
+        {{ msg3 }}
+        <div class="col-md-8">
+            <table class="table">
+                <thead>
+                {% for row in timeslots %}
+                    <td>{{ row.day }} {{ row.time }}</td>
+                {% endfor %}
+                </thead>
+                <tr>
+                    {% for timeslot in timeslots %}
+                        {% if timeslot in tutor.get_teaching_times() %}
+                            <td class="occupied"></td>
+                        {% elif  timeslot in availability %}
+                            <td class="attended" id="slot/{{ timeslot.id }}/{{ tutor.id }}"
+                                onclick="updateAvailability({{ timeslot.id }},{{ tutor.id }},'slot/{{ timeslot.id }}/{{ tutor.id }}')"></td>
+                    {% else %}
+                            <td class="notattended" id="slot/{{ timeslot.id }}/{{ tutor.id }}"
+                                onclick="updateAvailability({{ timeslot.id }},{{ tutor.id }},'slot/{{ timeslot.id }}/{{ tutor.id }}')"></td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+
+            </table>
+        </div>
+    </div>
+
+    {% include "mymodal.html" %}
+    <script>
+        function updateAvailability(timeslotid, tutorid, id) {
+            $.ajax({
+                url: "/updatetutoravailabilityajax",
+                data: {timeslotid: timeslotid, tutorid: tutorid},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var x = document.getElementById(id);
+                    if (x.className == "attended") {
+                        x.className = "notattended";
+                    } else if (x.className == "notattended") {
+                        x.className = "attended";
+                    }
+                },
+                error: function () {
+
+                }
+            });
+        }</script>
+
+
+{% endblock %}

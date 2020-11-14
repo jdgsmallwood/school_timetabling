@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+<div class="col-md-12">
+<table class="table">
+    <thead>
+    <td>Username</td>
+    <td>Mapped Tutor</td>
+    <td>Is Admin?</td>
+    <td></td>
+    </thead>
+
+    <tr>
+        <td>{{ user.username }}</td>
+        {% if current_user.is_admin == '1' %}
+            <td><select id="usermapping/{{ user.id }}" onchange="mapTutorUser({{ user.id }})">
+            <option value = "-1" selected>--Please Select a Tutor--</option>
+                {% for tutor in tutors %}
+                    {% if tutor == user.tutor %}
+                    <option value="{{ tutor.id }}" selected>{{ tutor.name }}</option>
+                    {% else %}
+                    <option value="{{ tutor.id }}">{{ tutor.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select></td>
+            <td><select id="useradmin/{{ user.id }}" onchange="userAdmin({{ user.id }})">
+                {% if user.is_admin=='1' %}
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                    {% else %}
+                    <option value="1">Yes</option>
+                    <option value="0" selected>No</option>
+                    {% endif %}
+            </select></td>
+        {% else %}
+        <td>{{ user.tutor.name }}</td>
+            {% if user.is_admin == '1' %}
+            <td>Yes</td>
+                {% else %}
+                <td>No</td>
+                {% endif %}
+        {% endif %}
+    {% if current_user.is_admin == '1' %}
+    <td>    <a href='{{ url_for('delete_user',username=user.username) }}' class="delete" data-confirm="Are you sure you want to delete this item?"><img
+                            src='../static/img/removeSymbol.png' class='deleteIcon'/></a></td>
+    {% endif %}
+
+    </tr>
+
+
+</table>
+</div>
+</div>
+
+<script>
+function userAdmin(user_id) {
+    var y = document.getElementById('useradmin/'+user_id)
+$.ajax({
+                url: "/useradminajax",
+                data: {user_id: user_id, admin: y.value},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                },
+                error: function () {
+
+                }
+            });
+}
+
+
+function mapTutorUser(user_id) {
+var e = document.getElementById("usermapping/"+user_id);
+$.ajax({
+                url: "/maptutoruserajax",
+                data: {user_id: user_id, tutor_id: e.value},
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                },
+                error: function () {
+
+                }
+            });
+}
+
+
+</script>
+
+{% endblock %}

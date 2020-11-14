@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Timetable</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="timetable">
+                <thead>
+                <tr>
+                    <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Day</td>
+                <td>Time</td>
+                <td>Tutor</td>
+                    <td>Room</td>
+                <td></td>
+                </tr>
+                </thead>
+
+
+            </table>
+        </div>
+    </div>
+    {% if current_user.is_admin == '1' %}
+        <button class="button" data-toggle="modal" data-target="#addModal">Add Timetable</button>
+        <a href="/downloadtimetable">
+            <button class="button">Download Timetable as Excel</button>
+        </a>
+        <a href="/downloadindividualtimetables">
+            <button class="button">Download Individual Student Timetables</button>
+        </a>
+		<a href="/downloadrolls">
+                <button type='button' class="button">Download All Rolls</button>
+            </a>
+        <button onclick="deleteallclasses()" class="button-delete delete" type="button"
+                data-confirm='Are you sure you want to delete all timetabled classes?'>Delete All Classes
+        </button>
+
+    {% endif %}
+
+
+
+
+    {% include "mymodal.html" %}
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+    <script>
+        function deleteallclasses() {
+            $.ajax({
+                url: "/deleteallclasses",
+                type: "GET",
+                success: function (data) {
+                    table.ajax.reload();
+                },
+                failure: function (data) {
+                    table.ajax.reload();
+                }
+            });
+
+        }
+
+
+        $(document).ready(function () {
+            var table = $('#timetable').DataTable({
+                "ajax": {
+                    "url": '/viewtimetableajax',
+                    "type": 'GET'
+                },
+
+                "columns": [{
+                    "data": "subject", "render": function (data, type, row, meta) {
+                        return row.subject.subcode;
+                    }
+                }, {
+                    "data": "subject", "render": function (data, type, row, meta) {
+                        return "<a href='/subject%3Fsubcode%3D" + row.subject.subcode + "'>" + row.subject.subname + "</a>";
+                    }
+                }, {
+                    "data": "time", "render": function (data, type, row, meta) {
+                        return row.timeslot.day;
+                    }
+                }, {
+                    "data": "time", "render": function (data, type, row, meta) {
+                        return row.timeslot.time;
+                    }
+                }, {
+                    "data": "tutor", "render": function (data, type, row, meta) {
+                        return "<a href='/viewtutor%3Ftutorid%3D" + row.tutor.id + "'>" + row.tutor.name + "</a>";
+                    }
+                }, {
+                    "data": "room", "render": function (data, type, row, meta) {
+                        return row.room.name;
+                    }
+                }
+
+                    ,
+                    {
+                        "data": "tutor", "render": function (data, type, row, meta) {
+                        return "<a href='/removetimetabledclass%3Ftimetabledclassid%3D" + row.id + "'><img src='../static/img/removeSymbol.png' class='deleteIcon' /></a>";
+                    }
+                    }
+                ]
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Upload Excel Student File</h1>
+    {{ msg }}
+    <form action="uploadstudentdata" method="post" enctype="multipart/form-data">
+        <input type="file" name="file"><br/><br/>
+        <input class="button" type="submit" value="Upload">
+    </form>
+
+{% endblock %}

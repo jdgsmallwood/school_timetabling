@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Universities</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="universities" id="universities">
+                <thead>
+                <tr>
+                    <td>Name</td>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    {% if current_user.is_admin == '1' %}
+        <div class="row">
+            <div class="col-md-12">
+
+                <button type="button" class="button" data-toggle="modal" data-target="#addModal">Add University</button>
+
+            </div>
+        </div>{% endif %}
+
+
+    {% include 'mymodal.html' %}
+
+
+
+
+
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+    <script>
+
+        $(document).ready(function () {
+            $('#universities').DataTable({
+                "ajax": {
+                    "url": '/viewuniversitiesajax',
+                    "type": 'GET'
+                },
+                "columns": [{
+                    "data": "name", "render": function (data, type, row, meta) {
+                        return "<a href='/viewuni%3Funiid%3D" + row.id + "'>" + row.name + "</a>";
+                    }
+                }
+                ]
+            });
+        });
+    </script>
+
+{% endblock %}

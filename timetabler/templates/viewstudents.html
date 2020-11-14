@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Students</h1>
+    {{ msg }}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="students">
+                <thead>
+                <td>Student ID</td>
+                <td>Name</td>
+                </thead>
+
+
+            </table>
+        </div>
+    </div>
+
+{% if current_user.is_admin == '1' %}
+    <button type="button" class="button" data-toggle="modal" data-target="#addModal">Add Student</button>
+
+{% endif %}
+    {% include 'mymodal.html' %}
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+
+    <script>
+
+        $(document).ready(function () {
+            $('#students').DataTable({
+                "ajax": {
+                    "url": '/viewstudentsajax',
+                    "type": 'GET'
+                },
+                "columns": [{"data": "studentcode"}, {
+                    "data": "name", "render": function (data, type, row, meta) {
+                        return "<a href='/viewstudent%3Fstudentcode%3D" + row.studentcode + "'>" + row.name+"</a>";
+                    }
+                }]
+            });
+        });
+    </script>
+{% endblock %}

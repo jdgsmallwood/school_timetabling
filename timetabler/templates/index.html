@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1><u>Welcome to Timetabling!</u></h1>
+    {% if current_user.is_admin == '1' %}
+<ol>
+    <h2><li>Check that the year and semester are correct <a href="admin">here</a>.</li></h2>
+    <h2><li><a href="timeslots">Create Timeslots</a> and Indicate Preferred Times</li></h2>
+
+    <h2><li><a href="rooms">Create Rooms</a> and Designate Rooms with Projectors</li></h2>
+    Follow the link and press "Add Room" and enter the name of the room. Once the room has been created, you can select from the drop-down box if the room has a projector.
+    <h2><li><a href="uploadstudentdata">Upload Student Data</a></li></h2>
+    Upload the file that is given to you by the uni with all of the
+    <h2><li><a href="uploadtutordata">Upload Tutor Data and Subject Mapping</a></li></h2>
+    <h2><li><a href="uploadtutordata">Upload Tutor Availability</a></li></h2>
+    <p>This must be in an Excel document with the tutors' names in the first column, and the timeslots in the top row.
+    <p>NOTE: The spelling of the tutors' names and the timeslots must match those created in steps 1 and 4 respectively.
+    <p>Alternatively you can fill in the table manually <a href="tutoravailability">here</a>.</p>
+	<h2><li>Update which subjects require projectors</li></h2>
+    Go to the subject page and update the "Needs Projector" dropdown box to "Yes"
+    <h2><li>Run the Timetable Program</li></h2>
+</ol>
+<h2></h2>
+        {% else %}
+
+        {% if not current_user.tutor %}
+    You are not currently mapped to a tutor, please contact the Academic Co-ordinator for access.
+    {% endif %}
+{% endif %}
+
+{% endblock %}
+
+

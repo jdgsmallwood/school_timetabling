@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Please Register A User:</h1>
+    <form action="/register" method="POST">
+        {{ form.csrf_token }}
+        Username: {{ form.user_id }}
+        Password: {{ form.password }}
+        {{ msg }}
+        <input type="submit" class="button" value="Register"/>
+    </form>
+
+{% endblock %}
