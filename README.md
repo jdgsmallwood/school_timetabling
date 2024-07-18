@@ -99,3 +99,9 @@ appcfg = {
     ]
 }
 ```
+
+# Screenshots
+![Screenshot from 2024-07-18 22-16-52](https://github.com/user-attachments/assets/b3f46e1d-4fd9-42ae-83a4-3ee1affd060b)
+
+![Screenshot from 2024-07-18 22-18-21](https://github.com/user-attachments/assets/73c59149-1737-466d-8c93-0ce66567e242)
+
