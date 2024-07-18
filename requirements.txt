@@ -15,5 +15,5 @@ python-docx
 pymysql
 xlsxwriter
 flask-migrate
-flask-script
 email_validator
+loguru

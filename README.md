@@ -16,8 +16,8 @@ Thanks to Alex Cummaudo for help with this project as well.
     $ pip install -r requirements.txt
     ```
 
-3. Make your configurations in `attendance/config.py`.
-4. Open `attendance/__init__.py` in a text editor.
+3. Make your configurations in `timetabler/config.py`.
+4. Open `timetabler/__init__.py` in a text editor.
 5. Comment out the `init_db` function call on line 90.
 6. Run the following commands to create and migrate the database:
 
@@ -38,6 +38,9 @@ $ python manage.py runserver
 ```
 
 The server is up at **[http://127.0.0.1:5000/](http://127.0.0.1:5000/)**.
+
+## Running the tests
+To run the tests, run 
 
 ### Setting up a timetable
 
